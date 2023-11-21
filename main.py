@@ -37,7 +37,9 @@ class TempTab(tk.Frame):
     def setup_form(self):
         
         self.read_dist_frame = ReadDistFrame(master=self)
+        self.show_dist_color_map_frame = ShowColorMapFrame(master=self)
         self.read_dist_frame.grid(row=0, column=0)
+        self.show_dist_color_map_frame.grid(row=1,column=0)
 
 class ReadDistFrame(tk.Frame):
     def __init__(self, *args, header_name="ReadDistFrame", **kwargs):
@@ -70,7 +72,16 @@ class ReadDistFrame(tk.Frame):
         temp_dist_path = file_path
         if file_path:
             print("選択されたファイル:", file_path)
-
+    
+class ShowColorMapFrame(tk.Frame):
+    def __init__(self, *args, header_name="ShowColorMapFrame", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.header_name = header_name
+        self.setup_form()
+        
+    def setup_form(self):
+        self.label = tk.Label(self, text='test')
+        self.label.grid(row=0, column=0, padx=10,sticky="w")
 
 class XRDTab(tk.Frame):
     def __init__(self, master=None, **kwargs):
