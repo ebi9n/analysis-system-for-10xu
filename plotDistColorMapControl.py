@@ -12,6 +12,7 @@ class plotDistColorMapControl:
     カラーマップのプロットを実施
     """
     def __init__(self):
+        # change test
         """
         コンストラクタ
         """
