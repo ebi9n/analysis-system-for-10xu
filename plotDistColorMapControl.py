@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import plotConfig
 
-FIGSIZE = (8,10)
-DPI = 100
+FIGSIZE = (10,16)
+DPI = 150
 FACECOLOR = "white"
 LASER_RANGE_COLOR = "white"
 LASER_RANGE_ALPHA = 0.50
@@ -96,8 +96,8 @@ if __name__ == '__main__':
     filename = "model_data/rotated_(-4e-1)ERLAMBDAFeO06_  02(v3.0)_dist(20).csv"
     plot_dist_color_map = plotDistColorMapControl()
     plot_dist_color_map.replot(filename=filename,
-                               draw_min_frame=10,
-                               draw_max_frame=250,
+                               draw_min_frame=60,
+                               draw_max_frame=100,
                                left_max_pixel= 120,
                                right_max_pixel= 360,
                                beam_diam_pixel= 7.8125)
