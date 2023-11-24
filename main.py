@@ -13,18 +13,18 @@ import tkinter as tk
 from tkinter import ttk
 import GUI_XRDTab as XRDTab
 import GUI_TempTab as TempTab
+import setting
 
-FIGSIZE = (5,5)
-DPI = 100
-
+WINDOW_TITLE = setting.WINDOW_TITLE
+WINDOW_SIZE = setting.WINDOW_SIZE
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.setup_form()
 
     def setup_form(self):
-        self.geometry("600x800")
-        self.title('HLA')
+        self.geometry(WINDOW_SIZE)
+        self.title(WINDOW_TITLE)
        
         # タブを生成する
         self.tabs = ttk.Notebook(self)

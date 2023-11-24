@@ -11,9 +11,11 @@ import seaborn as sns
 
 import tkinter as tk
 from tkinter import ttk
+import setting
 
-FIGSIZE = (5,5)
-DPI = 100
+FIGSIZE = setting.FIGSIZE
+DPI = setting.DPI
+
 class TempTab(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)

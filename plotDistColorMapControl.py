@@ -3,14 +3,14 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import plotConfig
+import setting
 
-FIGSIZE = (5,5)
-DPI = 100
-FACECOLOR = "white"
-LASER_RANGE_COLOR = "white"
-LASER_RANGE_ALPHA = 0.50
-CLOSE_SHOW_DIST_PIXEL = 30
+FIGSIZE = setting.FIGSIZE
+DPI = setting.DPI
+FACECOLOR = setting.FACECOLOR
+LASER_RANGE_COLOR = setting.LASER_RANGE_COLOR
+LASER_RANGE_ALPHA = setting.LASER_RANGE_ALPHA
+CLOSE_SHOW_DIST_PIXEL = setting.CLOSE_SHOW_DIST_PIXEL
 
 class plotDistColorMap:
     """
