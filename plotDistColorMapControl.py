@@ -11,6 +11,7 @@ FACECOLOR = "white"
 LASER_RANGE_COLOR = "white"
 LASER_RANGE_ALPHA = 0.50
 CLOSE_SHOW_DIST_PIXEL = 30
+
 class plotDistColorMap:
     """
     カラーマップのプロットを実施
