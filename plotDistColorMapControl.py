@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import plotConfig
 
-FIGSIZE = (10,16)
-DPI = 150
+FIGSIZE = (5,5)
+DPI = 100
 FACECOLOR = "white"
 LASER_RANGE_COLOR = "white"
 LASER_RANGE_ALPHA = 0.50
 CLOSE_SHOW_DIST_PIXEL = 30
-class plotDistColorMapControl:
+class plotDistColorMap:
     """
     カラーマップのプロットを実施
     """
@@ -94,7 +94,7 @@ class plotDistColorMapControl:
 if __name__ == '__main__':
     # テストを実施
     filename = "model_data/rotated_(-4e-1)ERLAMBDAFeO06_  02(v3.0)_dist(20).csv"
-    plot_dist_color_map = plotDistColorMapControl()
+    plot_dist_color_map = plotDistColorMap()
     plot_dist_color_map.replot(filename=filename,
                                draw_min_frame=60,
                                draw_max_frame=100,
