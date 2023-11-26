@@ -32,6 +32,8 @@ class App(tk.Tk):
         self.XRD_tab = XRDTab.XRDTab(master= self.tabs)
         self.tabs.add(self.XRD_tab, text='XRD時系列')
 
+
+
 if __name__ == '__main__':
     app = App()
     app.mainloop()
