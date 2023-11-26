@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from natsort import natsorted
 from tkinter import ttk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import seaborn as sns
 
 import tkinter as tk
 from tkinter import ttk
