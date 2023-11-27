@@ -20,7 +20,7 @@ class TempTab(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.setup_form()
-
+        # 変数群を定義
     def setup_form(self):
         
         self.read_dist_frame = ReadDistFrame(master=self)
@@ -51,19 +51,25 @@ class ReadDistFrame(tk.Frame):
         self.textbox.grid(row=1, column=0, padx=10, pady=(0,10), sticky="ew")
         
         # ファイルパスを指定するボタン
-        self.browse_button = tk.Button(self,text='ファイルを参照',command=self.browse_dist_file)
+        self.browse_button = tk.Button(self,text='ファイルを参照',command=self.button_select_dist_file)
         self.browse_button.grid(row=1,column=1,padx=10, pady=(0,10))
         
-        # ファイルを開くボタン
         self.open_button = tk.Button(self,text='　開く　')
         self.open_button.grid(row=1,column=2,padx=10, pady=(0,10))
     
+    def button_select_dist_file(self):
+        filepath = self.browse_dist_file()
+        if filepath:
+            self.textbox.delete(0, tk.END)
+            self.textbox.insert(0,filepath)
+
     @staticmethod
     def browse_dist_file():
         file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
         temp_dist_path = file_path
         if file_path:
             print("選択されたファイル:", file_path)
+            return temp_dist_path
     
 class ShowColorMapFrame(tk.Frame):
     def __init__(self, *args, header_name="ShowColorMapFrame", **kwargs):
@@ -226,16 +232,15 @@ class ReadCalibFrame(tk.Frame):
         self.textbox.grid(row=1, column=0, padx=5, pady=(0,10), sticky="ew")
         
         # ファイルパスを指定するボタン
-        self.browse_button = tk.Button(self,text='ファイルを参照',command=self.browse_calib_file)
+        self.browse_button = tk.Button(self,text='ファイルを参照',command=self.button_select_calib_file)
         self.browse_button.grid(row=1,column=1,padx=10, pady=(0,10))
         
         # ファイルを開くボタン
         self.open_button = tk.Button(self,text='　開く　')
         self.open_button.grid(row=1,column=2,padx=10, pady=(0,10))
 
-    @staticmethod
-    def browse_calib_file():
-        file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-        temp_calib_path = file_path
-        if file_path:
-            print("選択されたファイル:", file_path)
+    def button_select_calib_file(self):
+        filepath = ReadDistFrame.browse_dist_file()
+        if filepath:
+            self.textbox.delete(0, tk.END)
+            self.textbox.insert(0,filepath)
