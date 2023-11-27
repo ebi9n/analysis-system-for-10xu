@@ -23,6 +23,13 @@ LASER_RANGE_ALPHA = 0.50
 CLOSE_SHOW_DIST_PIXEL = 30
 
 """
+calibファイルの最大pixelを取得するときの初期設定
+"""
+LEFT_MIN_PIXEL = 110
+LEFT_MAX_PIXEL = 150
+RIGHT_MIN_PIXEL = 370
+RIGHT_MAX_PIXEL = 410
+"""
 実験条件に関する設定
 ここの値が描画の初期値となる
 """
