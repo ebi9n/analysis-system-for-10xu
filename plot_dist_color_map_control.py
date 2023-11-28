@@ -40,6 +40,7 @@ class plotDistColorMap:
                right_max_pixel = None,
                beam_diam_pixel = None):
         beam_radius_pixel = beam_diam_pixel / 2
+        
         if filename is not None:
             self.filepath = filename
             self.dist_df = pd.read_csv(self.filepath)
@@ -65,7 +66,8 @@ class plotDistColorMap:
         # 左側のレーザー範囲近傍を描画
         sns.heatmap(self.temp_df,ax=self.ax_left)
         self.ax_left.set_ylim(draw_max_frame,draw_min_frame)
-        self.ax_left.set_xlim(left_max_pixel - CLOSE_SHOW_DIST_PIXEL/2 ,left_max_pixel + CLOSE_SHOW_DIST_PIXEL/2)
+        self.ax_left.set_xlim(left_max_pixel - CLOSE_SHOW_DIST_PIXEL/2 ,
+                              left_max_pixel + CLOSE_SHOW_DIST_PIXEL/2)
         self.ax_left.axvspan(left_max_pixel - beam_radius_pixel,
                              left_max_pixel + beam_radius_pixel,
                              color=LASER_RANGE_COLOR,
@@ -74,11 +76,13 @@ class plotDistColorMap:
         # 右側のレーザー範囲近傍を描画
         sns.heatmap(self.temp_df,ax=self.ax_right)
         self.ax_right.set_ylim(draw_max_frame,draw_min_frame)
-        self.ax_right.set_xlim(right_max_pixel - CLOSE_SHOW_DIST_PIXEL/2 ,right_max_pixel + CLOSE_SHOW_DIST_PIXEL/2)
+        self.ax_right.set_xlim(right_max_pixel - CLOSE_SHOW_DIST_PIXEL/2 ,
+                               right_max_pixel + CLOSE_SHOW_DIST_PIXEL/2)
         self.ax_right.axvspan(right_max_pixel - beam_radius_pixel,
                               right_max_pixel + beam_radius_pixel,
                               color=LASER_RANGE_COLOR,
                               alpha=LASER_RANGE_ALPHA)
+        
         return self.fig
     @classmethod
     def format_dist_df(cls,dist_df):
@@ -94,9 +98,9 @@ if __name__ == '__main__':
     filename = "model_data/rotated_(-4e-1)ERLAMBDAFeO06_  02(v3.0)_dist(20).csv"
     plot_dist_color_map = plotDistColorMap()
     plot_dist_color_map.replot(filename=filename,
-                               draw_min_frame=60,
-                               draw_max_frame=100,
-                               left_max_pixel= 120,
-                               right_max_pixel= 360,
+                               draw_min_frame=setting.INITIAL_HEAT_START_FRAME,
+                               draw_max_frame=setting.INITIAL_HEAT_END_FRAME,
+                               left_max_pixel= setting.LEFT_MAX_PIXEL,
+                               right_max_pixel= setting.RIGHT_MAX_PIXEL,
                                beam_diam_pixel= 7.8125)
     plt.show()

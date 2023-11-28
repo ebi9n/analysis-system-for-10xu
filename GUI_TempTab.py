@@ -101,15 +101,16 @@ class ShowColorMapFrame(tk.Frame):
         self.setup_form()
     def setup_form(self):
         # test用
-        self.fig = self.plot_dist_control.fig
-        self.canvas = FigureCanvasTkAgg(self.fig,master=self)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0,column=0)
+        self.canvas = tk.Canvas(master=self, bg='white',height=500,width=500)
+        self.canvas.grid(row=0,column=0)
     
     def update(self, dist_filepath=None):
         # 再描画用
+        del self.plot_dist_control
+        self.plot_dist_control = plotDistColorMap()
+        self.fig = self.plot_dist_control.fig
         self.dist_filepath = dist_filepath
-        self.fig = self.plot_dist_control.replot(self.dist_filepath,
+        self.plot_dist_control.replot(self.dist_filepath,
                                       draw_min_frame=self.draw_min_frame,
                                       draw_max_frame=self.draw_max_frame,
                                       left_max_pixel=self.left_max_pixel,
@@ -117,7 +118,8 @@ class ShowColorMapFrame(tk.Frame):
                                       beam_diam_pixel=self.laser_beam_diam_pixel)
         self.canvas = FigureCanvasTkAgg(self.fig,master=self)
         self.canvas.draw()
-        
+        self.canvas.get_tk_widget().grid(row=0,column=0)
+
 class PlotOptionFrame(tk.LabelFrame):
     def __init__(self, *args,header_name="PlotOptionFrame", **kwargs):
         super().__init__(text='プロットのオプション',*args, **kwargs)

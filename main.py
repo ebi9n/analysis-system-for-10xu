@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from natsort import natsorted
 from tkinter import ttk
+from tkinter import messagebox
 
 import tkinter as tk
 from tkinter import ttk
@@ -31,8 +32,21 @@ class App(tk.Tk):
         self.tabs.add(self.temp_tab, text='温度計算')
         self.XRD_tab = XRDTab.XRDTab(master= self.tabs)
         self.tabs.add(self.XRD_tab, text='XRD時系列')
+        self.protocol("WM_DELETE_WINDOW", self.delete_window)
+    
+    def delete_window(self):
+        print("ウィンドウのxボタンが押された")
 
+        # 終了確認のメッセージ表示
+        ret = messagebox.askyesno(
+            title = "終了確認",
+            message = "プログラムを終了しますか？")
 
+        if ret == True:
+            # 「はい」がクリックされたとき
+            plt.close("all")
+            self.destroy()
+    
 
 if __name__ == '__main__':
     app = App()
