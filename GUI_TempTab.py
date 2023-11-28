@@ -12,6 +12,7 @@ import seaborn as sns
 import tkinter as tk
 from tkinter import ttk
 import setting
+from plot_dist_color_map_control import plotDistColorMap
 
 FIGSIZE = setting.FIGSIZE
 DPI = setting.DPI
@@ -20,6 +21,7 @@ class TempTab(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.setup_form()
+        self.dist_filepath = None
         # 変数群を定義
     def setup_form(self):
         
@@ -32,11 +34,16 @@ class TempTab(tk.Frame):
         self.show_dist_color_map_frame.grid(row=1,column=0)
         self.plot_option_frame.grid(row=2,column=0,padx=0,sticky=tk.EW)
         self.draw_select_frame.grid(row=3,column=0,padx=0,pady=20,sticky=tk.EW)
-
+    def update_canvas(self,dist_filepath=None):
+        if dist_filepath is not None:
+            self.dist_filepath = dist_filepath
+        self.show_dist_color_map_frame.update(dist_filepath=self.dist_filepath)
+        
 class ReadDistFrame(tk.Frame):
     def __init__(self, *args, header_name="ReadDistFrame", **kwargs):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
+        self.dist_filepath = None
         self.setup_form()
 
     def setup_form(self):
@@ -54,15 +61,21 @@ class ReadDistFrame(tk.Frame):
         self.browse_button = tk.Button(self,text='ファイルを参照',command=self.button_select_dist_file)
         self.browse_button.grid(row=1,column=1,padx=10, pady=(0,10))
         
-        self.open_button = tk.Button(self,text='　開く　')
+        self.open_button = tk.Button(self,text='　開く　',command=self.button_draw_color_map)
         self.open_button.grid(row=1,column=2,padx=10, pady=(0,10))
     
     def button_select_dist_file(self):
-        filepath = self.browse_dist_file()
-        if filepath:
+        self.dist_filepath = self.browse_dist_file()
+        if self.dist_filepath:
             self.textbox.delete(0, tk.END)
-            self.textbox.insert(0,filepath)
-
+            self.textbox.insert(0,self.dist_filepath)
+    
+    def button_draw_color_map(self):
+        if self.textbox.get() is not None:
+            dist_filepath = self.textbox.get()
+            print(dist_filepath)
+        self.master.update_canvas(dist_filepath)
+    
     @staticmethod
     def browse_dist_file():
         file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
@@ -71,20 +84,40 @@ class ReadDistFrame(tk.Frame):
             print("選択されたファイル:", file_path)
             return temp_dist_path
     
+    
 class ShowColorMapFrame(tk.Frame):
     def __init__(self, *args, header_name="ShowColorMapFrame", **kwargs):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
-        self.setup_form()
         self.fig = None
         self.canvas = None
+        self.dist_filepath = None
+        self.plot_dist_control = plotDistColorMap()
+        self.draw_min_frame = setting.INITIAL_HEAT_START_FRAME
+        self.draw_max_frame = setting.INITIAL_HEAT_END_FRAME
+        self.left_max_pixel = setting.LEFT_MAX_PIXEL
+        self.right_max_pixel = setting.RIGHT_MAX_PIXEL
+        self.laser_beam_diam_pixel = setting.INITIAL_LASER_DIAMETER
+        self.setup_form()
     def setup_form(self):
         # test用
-        self.fig = plt.figure(figsize=FIGSIZE,dpi=DPI)
-        canvas = FigureCanvasTkAgg(self.fig,master=self)
-        canvas.draw()
-        canvas.get_tk_widget().pack()
-
+        self.fig = self.plot_dist_control.fig
+        self.canvas = FigureCanvasTkAgg(self.fig,master=self)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().grid(row=0,column=0)
+    
+    def update(self, dist_filepath=None):
+        # 再描画用
+        self.dist_filepath = dist_filepath
+        self.fig = self.plot_dist_control.replot(self.dist_filepath,
+                                      draw_min_frame=self.draw_min_frame,
+                                      draw_max_frame=self.draw_max_frame,
+                                      left_max_pixel=self.left_max_pixel,
+                                      right_max_pixel=self.right_max_pixel,
+                                      beam_diam_pixel=self.laser_beam_diam_pixel)
+        self.canvas = FigureCanvasTkAgg(self.fig,master=self)
+        self.canvas.draw()
+        
 class PlotOptionFrame(tk.LabelFrame):
     def __init__(self, *args,header_name="PlotOptionFrame", **kwargs):
         super().__init__(text='プロットのオプション',*args, **kwargs)

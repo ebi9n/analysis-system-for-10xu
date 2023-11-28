@@ -22,14 +22,16 @@ class plotDistColorMap:
         コンストラクタ
         """
         # figの作成
+        self.fig = None
+        self.filepath = None
+        self.dist_df = None
+        self.temp_df = None
         self.fig = plt.figure(figsize=FIGSIZE, dpi=DPI,facecolor=FACECOLOR)
         # 座標軸の作成
         self.ax_main = self.fig.add_subplot(211)
         self.ax_left = self.fig.add_subplot(223)
         self.ax_right = self.fig.add_subplot(224)
-        self.filepath = None
-        self.dist_df = None
-        self.temp_df = None
+
     def replot(self,
                filename=None,
                draw_min_frame = None,
@@ -41,12 +43,6 @@ class plotDistColorMap:
         if filename is not None:
             self.filepath = filename
             self.dist_df = pd.read_csv(self.filepath)
-        
-        # 描画が重ならないように一度消去
-        self.ax_main.clear()
-        self.ax_left.clear()
-        self.ax_right.clear()
-        
         # フォーマットを実施
         self.temp_df = self.format_dist_df(self.dist_df)
 
@@ -83,6 +79,7 @@ class plotDistColorMap:
                               right_max_pixel + beam_radius_pixel,
                               color=LASER_RANGE_COLOR,
                               alpha=LASER_RANGE_ALPHA)
+        return self.fig
     @classmethod
     def format_dist_df(cls,dist_df):
         temp_df = dist_df.drop(['ROI','Frame','Wavelength'], axis=1)
