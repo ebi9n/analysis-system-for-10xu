@@ -22,6 +22,11 @@ class TempTab(tk.Frame):
         super().__init__(master, **kwargs)
         self.setup_form()
         self.dist_filepath = None
+        self.draw_min_frame = None
+        self.draw_max_frame = None
+        self.left_max_pixel = None
+        self.right_max_pixel = None
+        self.beam_diam_pixel = None
         # 変数群を定義
     def setup_form(self):
         
@@ -29,15 +34,40 @@ class TempTab(tk.Frame):
         self.show_dist_color_map_frame = ShowColorMapFrame(master=self)
         self.plot_option_frame = PlotOptionFrame(master=self)
         self.draw_select_frame = DrawSelectFrame(master=self)
-
         self.read_dist_frame.grid(row=0, column=0)
         self.show_dist_color_map_frame.grid(row=1,column=0)
         self.plot_option_frame.grid(row=2,column=0,padx=0,sticky=tk.EW)
         self.draw_select_frame.grid(row=3,column=0,padx=0,pady=20,sticky=tk.EW)
-    def update_canvas(self,dist_filepath=None):
+    def update_canvas(self,
+                      dist_filepath=None,
+                      draw_min_frame = None,
+                      draw_max_frame = None,
+                      left_max_pixel = None,
+                      right_max_pixel = None,
+                      beam_diam_pixel = None):
+        # optionFrameからすべての値を取得する
         if dist_filepath is not None:
             self.dist_filepath = dist_filepath
-        self.show_dist_color_map_frame.update(dist_filepath=self.dist_filepath)
+        self.update_options()
+        print(self.beam_diam_pixel)
+        self.show_dist_color_map_frame.update(dist_filepath=self.dist_filepath,
+                                              draw_min_frame=self.draw_min_frame,
+                                              draw_max_frame=self.draw_max_frame,
+                                              left_max_frame=self.left_max_pixel,
+                                              right_max_frame=self.right_max_pixel,
+                                              beam_diam_pixel=self.beam_diam_pixel)
+    def update_options(self):
+        self.plot_option_frame.update_value()
+        if self.plot_option_frame.draw_min_frame is not None:
+            self.draw_min_frame = self.plot_option_frame.draw_min_frame
+        if self.plot_option_frame.draw_max_frame is not None:
+            self.draw_max_frame = self.plot_option_frame.draw_max_frame
+        if self.plot_option_frame.left_max_pixel is not None:
+            self.left_max_pixel = self.plot_option_frame.left_max_pixel
+        if self.plot_option_frame.right_max_pixel is not None:
+            self.right_max_pixel = self.plot_option_frame.right_max_pixel
+        if self.plot_option_frame.beam_diam_pixel is not None:
+            self.beam_diam_pixel = self.plot_option_frame.beam_diam_pixel
         
 class ReadDistFrame(tk.Frame):
     def __init__(self, *args, header_name="ReadDistFrame", **kwargs):
@@ -74,7 +104,7 @@ class ReadDistFrame(tk.Frame):
         if self.textbox.get() is not None:
             dist_filepath = self.textbox.get()
             print(dist_filepath)
-        self.master.update_canvas(dist_filepath)
+        self.master.update_canvas(dist_filepath=dist_filepath)
     
     @staticmethod
     def browse_dist_file():
@@ -104,12 +134,22 @@ class ShowColorMapFrame(tk.Frame):
         self.canvas = tk.Canvas(master=self, bg='white',height=500,width=500)
         self.canvas.grid(row=0,column=0)
     
-    def update(self, dist_filepath=None):
+    def update(self, dist_filepath=None,
+                     draw_min_frame=None,
+                     draw_max_frame=None,
+                     left_max_frame=None,
+                     right_max_frame=None,
+                     beam_diam_pixel=None):
         # 再描画用
         del self.plot_dist_control
         self.plot_dist_control = plotDistColorMap()
         self.fig = self.plot_dist_control.fig
         self.dist_filepath = dist_filepath
+        self.draw_min_frame = draw_min_frame
+        self.draw_max_frame = draw_max_frame
+        self.left_max_pixel = left_max_frame
+        self.right_max_pixel = right_max_frame
+        self.laser_beam_diam_pixel = beam_diam_pixel
         self.plot_dist_control.replot(self.dist_filepath,
                                       draw_min_frame=self.draw_min_frame,
                                       draw_max_frame=self.draw_max_frame,
@@ -125,14 +165,25 @@ class PlotOptionFrame(tk.LabelFrame):
         super().__init__(text='プロットのオプション',*args, **kwargs)
         self.header_name = header_name
         self.setup_form()
-        
+        self.draw_min_frame = None
+        self.draw_max_frame = None
+        self.left_max_pixel = None
+        self.right_max_pixel = None
+        self.beam_diam_pixel = None
     def setup_form(self):
-        max_pixel_enter_frame = MaxPixelEnterFrame(self)
-        max_pixel_enter_frame.grid(row=0, column=0, padx=5,sticky=tk.EW)
-        read_calib_frame = ReadCalibFrame(self)
-        read_calib_frame.grid(row=1, column=0, padx=5,sticky=tk.EW)
-        other_option_enter_frame = OtherOptionEnterFrame(self)
-        other_option_enter_frame.grid(row=2,column=0,padx=5,sticky=tk.EW)
+        self.max_pixel_enter_frame = MaxPixelEnterFrame(self)
+        self.max_pixel_enter_frame.grid(row=0, column=0, padx=5,sticky=tk.EW)
+        self.read_calib_frame = ReadCalibFrame(self)
+        self.read_calib_frame.grid(row=1, column=0, padx=5,sticky=tk.EW)
+        self.other_option_enter_frame = OtherOptionEnterFrame(self)
+        self.other_option_enter_frame.grid(row=2,column=0,padx=5,sticky=tk.EW)
+    def update_value(self):
+        self.left_max_pixel = int(self.max_pixel_enter_frame.left_max_pixel_enter_frame.left_textbox.get())
+        self.right_max_pixel = int(self.max_pixel_enter_frame.right_max_pixel_enter_frame.right_textbox.get())
+        self.draw_min_frame = int(self.other_option_enter_frame.heat_start_enter_frame.left_textbox.get())
+        self.draw_max_frame = int(self.other_option_enter_frame.heat_end_enter_frame.left_textbox.get())
+        self.beam_diam_pixel = float(self.other_option_enter_frame.laser_diam_enter_frame.left_textbox.get())
+        print(type(self.beam_diam_pixel))
 
 class DrawSelectFrame(tk.Frame):
     def __init__(self, *args,header_name="DrawSelectFrame", **kwargs):
@@ -144,14 +195,16 @@ class DrawSelectFrame(tk.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
-        replot_button = tk.Button(self,text='設定を反映して再描画')
+        replot_button = tk.Button(self,text='設定を反映して再描画',command=self.button_redraw)
         calc_button = tk.Button(self,text='設定を反映して温度を計算')
         replot_button.grid(row=0,column=0)
         calc_button.grid(row=0, column=1)
+    def button_redraw(self):
+        self.master.update_canvas()
         
 class OtherOptionEnterFrame(tk.Frame):
     """
-    レーザー径を除くプロット設定を追記するフレーム
+    中心位置を除くプロット設定を追記するフレーム
     """
     def __init__(self, *args,header_name="PlotOptionFrame", **kwargs):
         super().__init__(*args, **kwargs)
@@ -167,23 +220,25 @@ class OtherOptionEnterFrame(tk.Frame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
-        heat_start_enter_frame = HeatStartEnterFrame(self)
-        heat_end_enter_frame = HeatEndEnterFrame(self)
-        laser_diam_enter_frame = LaserDiamEnterFrame(self)
-
-        heat_start_enter_frame.grid(row=0,column=0,padx=5,sticky="w")
-        heat_end_enter_frame.grid(row=0,column=1,padx=10)
-        laser_diam_enter_frame.grid(row=0,column=2,padx=10)
+        self.heat_start_enter_frame = HeatStartEnterFrame(self)
+        self.heat_end_enter_frame = HeatEndEnterFrame(self)
+        self.laser_diam_enter_frame = LaserDiamEnterFrame(self)
+        
+        self.heat_start_enter_frame.grid(row=0,column=0,padx=5,sticky="w")
+        self.heat_end_enter_frame.grid(row=0,column=1,padx=10)
+        self.laser_diam_enter_frame.grid(row=0,column=2,padx=10)
 
 class HeatStartEnterFrame(tk.Frame):
     def __init__(self, *args, header_name="HeatStartEnterFrame", **kwargs):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
+        self.draw_min_frame = setting.INITIAL_HEAT_START_FRAME
         self.setup_form()
     def setup_form(self):
         self.left_label = tk.Label(self, text='加熱開始フレーム')
         self.left_label.grid(row=0, column=0,columnspan = 2, padx=5, sticky="w")
         self.left_textbox = tk.Entry(self, width=10)
+        self.left_textbox.insert(0,self.draw_min_frame)
         self.left_textbox.grid(row=1, column=0, padx=5, sticky="w")
         self.left_pixel_label = tk.Label(self, text='Frame')
         self.left_pixel_label.grid(row=1, column=1, padx=5, sticky="w")
@@ -192,22 +247,28 @@ class HeatEndEnterFrame(tk.Frame):
     def __init__(self, *args, header_name="HeatEndEnterFrame", **kwargs):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
+        self.draw_max_frame = setting.INITIAL_HEAT_END_FRAME
         self.setup_form()
     def setup_form(self):
         self.left_label = tk.Label(self, text='加熱終了フレーム')
         self.left_label.grid(row=0, column=0,columnspan = 2, padx=5, sticky="w")
         self.left_textbox = tk.Entry(self, width=10)
+        self.left_textbox.insert(0,self.draw_max_frame)
         self.left_textbox.grid(row=1, column=0, padx=5, sticky="w")
         self.left_pixel_label = tk.Label(self, text='Frame')
         self.left_pixel_label.grid(row=1, column=1, padx=5, sticky="w")
 
 class LaserDiamEnterFrame(tk.Frame):
     def __init__(self, *args, header_name="LaserDiamEnterFrame", **kwargs):
+        self.laser_beam_diam_pixel = setting.INITIAL_LASER_DIAMETER
         super().__init__(*args, **kwargs)
         self.header_name = header_name
+        self.setup_form()
+    def setup_form(self):
         self.left_label = tk.Label(self, text='レーザー直径')
         self.left_label.grid(row=0, column=0,columnspan = 2, padx=5, sticky="w")
         self.left_textbox = tk.Entry(self, width=10)
+        self.left_textbox.insert(0,self.laser_beam_diam_pixel)
         self.left_textbox.grid(row=1, column=0, padx=5, sticky="w")
         self.left_pixel_label = tk.Label(self, text='μm')
         self.left_pixel_label.grid(row=1, column=1, padx=5, sticky="w")
@@ -221,19 +282,21 @@ class MaxPixelEnterFrame(tk.Frame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
-        left_max_pixel_enter_frame = LeftMaxPixelEnterFrame(master=self)
-        left_max_pixel_enter_frame.grid(row=0, column=0, padx=5,sticky="w")
-        right_max_pixel_enter_frame = RightMaxPixelEnterFrame(master=self)
-        right_max_pixel_enter_frame.grid(row=0, column=1, padx=60)
+        self.left_max_pixel_enter_frame = LeftMaxPixelEnterFrame(master=self)
+        self.left_max_pixel_enter_frame.grid(row=0, column=0, padx=5,sticky="w")
+        self.right_max_pixel_enter_frame = RightMaxPixelEnterFrame(master=self)
+        self.right_max_pixel_enter_frame.grid(row=0, column=1, padx=60)
 class LeftMaxPixelEnterFrame(tk.Frame):
     def __init__(self, *args, header_name="LeftMaxPixelEnterFrame", **kwargs):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
+        self.left_max_pixel = setting.LEFT_MAX_PIXEL
         self.setup_form()
     def setup_form(self):
         self.left_label = tk.Label(self, text='左側の最大強度のPixel')
         self.left_label.grid(row=0, column=0,columnspan = 2, padx=5, sticky="w")
         self.left_textbox = tk.Entry(self, width=10)
+        self.left_textbox.insert(0,self.left_max_pixel)
         self.left_textbox.grid(row=1, column=0, padx=5, sticky="w")
         self.left_pixel_label = tk.Label(self, text='Pixel')
         self.left_pixel_label.grid(row=1, column=1, padx=5, sticky="w")
@@ -242,11 +305,13 @@ class RightMaxPixelEnterFrame(tk.Frame):
     def __init__(self, *args, header_name="RightMaxPixelEnterFrame", **kwargs):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
+        self.right_max_pixel = setting.RIGHT_MAX_PIXEL
         self.setup_form()
     def setup_form(self):
         self.right_label = tk.Label(self, text='右側の最大強度のPixel')
         self.right_label.grid(row=0, column=0,columnspan = 2, padx=5, sticky="w")
         self.right_textbox = tk.Entry(self, width=10)
+        self.right_textbox.insert(0,self.right_max_pixel)
         self.right_textbox.grid(row=1, column=0, padx=5, sticky="w")
         self.right_pixel_label = tk.Label(self, text='Pixel')
         self.right_pixel_label.grid(row=1, column=1, padx=5, sticky="w")
