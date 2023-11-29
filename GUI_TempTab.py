@@ -13,7 +13,7 @@ import tkinter as tk
 from tkinter import ttk
 import setting
 from plot_dist_color_map_control import plotDistColorMap
-
+from calculation import get_max_pixel
 FIGSIZE = setting.FIGSIZE
 DPI = setting.DPI
 
@@ -68,6 +68,7 @@ class TempTab(tk.Frame):
             self.right_max_pixel = self.plot_option_frame.right_max_pixel
         if self.plot_option_frame.beam_diam_pixel is not None:
             self.beam_diam_pixel = self.plot_option_frame.beam_diam_pixel
+
         
 class ReadDistFrame(tk.Frame):
     def __init__(self, *args, header_name="ReadDistFrame", **kwargs):
@@ -184,6 +185,11 @@ class PlotOptionFrame(tk.LabelFrame):
         self.draw_max_frame = int(self.other_option_enter_frame.heat_end_enter_frame.left_textbox.get())
         self.beam_diam_pixel = float(self.other_option_enter_frame.laser_diam_enter_frame.left_textbox.get())
         print(type(self.beam_diam_pixel))
+    def enter_from_calib(self,left_max_pixel, right_max_pixel):
+        self.max_pixel_enter_frame.left_max_pixel_enter_frame.left_textbox.delete(0,tk.END)
+        self.max_pixel_enter_frame.right_max_pixel_enter_frame.right_textbox.delete(0,tk.END)
+        self.max_pixel_enter_frame.left_max_pixel_enter_frame.left_textbox.insert(0,left_max_pixel)
+        self.max_pixel_enter_frame.right_max_pixel_enter_frame.right_textbox.insert(0, right_max_pixel)
 
 class DrawSelectFrame(tk.Frame):
     def __init__(self, *args,header_name="DrawSelectFrame", **kwargs):
@@ -336,7 +342,7 @@ class ReadCalibFrame(tk.Frame):
         self.browse_button.grid(row=1,column=1,padx=10, pady=(0,10))
         
         # ファイルを開くボタン
-        self.open_button = tk.Button(self,text='　開く　')
+        self.open_button = tk.Button(self,text='　開く　',command=self.button_open_calib_file)
         self.open_button.grid(row=1,column=2,padx=10, pady=(0,10))
 
     def button_select_calib_file(self):
@@ -344,3 +350,7 @@ class ReadCalibFrame(tk.Frame):
         if filepath:
             self.textbox.delete(0, tk.END)
             self.textbox.insert(0,filepath)
+    def button_open_calib_file(self):
+        if os.path.exists(self.textbox.get()):
+            left_max_pixel, right_max_pixel = get_max_pixel(self.textbox.get())
+            self.master.enter_from_calib(left_max_pixel,right_max_pixel)

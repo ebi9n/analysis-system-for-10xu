@@ -6,10 +6,10 @@ import pandas as pd
 import setting
 
 def get_max_pixel(calib_path,
-                  left_min_pixel=setting.LEFT_MIN_PIXEL,
-                  left_max_pixel=setting.LEFT_MAX_PIXEL,
-                  right_min_pixel = setting.RIGHT_MIN_PIXEL,
-                  right_max_pixel = setting.RIGHT_MAX_PIXEL):
+                  left_min_pixel=setting.LEFT_RANGE_MIN,
+                  left_max_pixel=setting.LEFT_RANGE_MAX,
+                  right_min_pixel = setting.RIGHT_RANGE_MIN,
+                  right_max_pixel = setting.RIGHT_RANGE_MAX):
     
     calib_DF = pd.read_csv(calib_path)
     # 各pixelの強度を足し合わせる

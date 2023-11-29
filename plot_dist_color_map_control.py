@@ -73,6 +73,7 @@ class plotDistColorMap:
                              color=LASER_RANGE_COLOR,
                              alpha=LASER_RANGE_ALPHA)
         
+        
         # 右側のレーザー範囲近傍を描画
         sns.heatmap(self.temp_df,ax=self.ax_right)
         self.ax_right.set_ylim(draw_max_frame,draw_min_frame)
