@@ -207,6 +207,10 @@ class DrawSelectFrame(tk.Frame):
         calc_button.grid(row=0, column=1)
     def button_redraw(self):
         self.master.update_canvas()
+    def button_calc_temp(self):
+        dlg_modeless = tk.Toplevel(self)
+        dlg_modeless.title("Modeless Dialog")   # ウィンドウタイトル
+        dlg_modeless.geometry("300x200")
         
 class OtherOptionEnterFrame(tk.Frame):
     """
