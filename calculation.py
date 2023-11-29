@@ -19,6 +19,5 @@ def get_max_pixel(calib_path,
     right_max_insty_pixel = insty_sum_per_pixel_series[right_min_pixel:right_max_pixel].idxmax()
 
     return left_max_insty_pixel, right_max_insty_pixel
-
 if __name__ == '__main__':
     print('done')

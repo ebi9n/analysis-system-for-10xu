@@ -85,8 +85,8 @@ class plotDistColorMap:
                               alpha=LASER_RANGE_ALPHA)
         
         return self.fig
-    @classmethod
-    def format_dist_df(cls,dist_df):
+    @staticmethod
+    def format_dist_df(dist_df):
         temp_df = dist_df.drop(['ROI','Frame','Wavelength'], axis=1)
         temp_df =temp_df.set_index(['Row','Column']).unstack()
         temp_df.index.names = ['Frame']

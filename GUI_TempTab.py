@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog
-import os
+import os, subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -8,6 +8,7 @@ from natsort import natsorted
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import seaborn as sns
+import threading
 
 import tkinter as tk
 from tkinter import ttk
@@ -202,7 +203,7 @@ class DrawSelectFrame(tk.Frame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         replot_button = tk.Button(self,text='設定を反映して再描画',command=self.button_redraw)
-        calc_button = tk.Button(self,text='設定を反映して温度を計算')
+        calc_button = tk.Button(self,text='設定を反映して温度を計算',command=self.button_calc_temp)
         replot_button.grid(row=0,column=0)
         calc_button.grid(row=0, column=1)
     def button_redraw(self):
@@ -210,8 +211,7 @@ class DrawSelectFrame(tk.Frame):
     def button_calc_temp(self):
         dlg_modeless = tk.Toplevel(self)
         dlg_modeless.title("Modeless Dialog")   # ウィンドウタイトル
-        dlg_modeless.geometry("300x200")
-        
+        dlg_modeless.geometry("600x800")
 class OtherOptionEnterFrame(tk.Frame):
     """
     中心位置を除くプロット設定を追記するフレーム
@@ -354,7 +354,41 @@ class ReadCalibFrame(tk.Frame):
         if filepath:
             self.textbox.delete(0, tk.END)
             self.textbox.insert(0,filepath)
+    
     def button_open_calib_file(self):
         if os.path.exists(self.textbox.get()):
-            left_max_pixel, right_max_pixel = get_max_pixel(self.textbox.get())
-            self.master.enter_from_calib(left_max_pixel,right_max_pixel)
+            progress_modal = tk.Toplevel(master=self)
+            progress_modal.title('now calculating...')
+            modal_x = self.master.master.master.master.winfo_x() + self.master.master.master.master.winfo_reqwidth() // 2 -40
+            modal_y = self.master.master.master.master.winfo_y() + self.master.master.master.master.winfo_reqheight() // 2 -40
+            progress_modal.geometry(f'80x50+{modal_x}+{modal_y}')
+
+            progress_modal.grab_set() #モーダルに
+            progress_modal.focus_set() # フォーカスするように
+            progress_modal.transient(self.master) 
+            progress_label = tk.Label(progress_modal,text='現在計算中です…')
+            progress_bar = ttk.Progressbar(progress_modal,
+                                           maximum=100,
+                                           mode="indeterminate",
+                                           style="Horizontal.TProgressbar")
+            progress_label.grid(row=0, column=0)
+            progress_bar.grid(row=1, column=0)
+
+            # 非同期処理を開始するスレッド
+            thread = threading.Thread(target=self.calculate_max_pixel, args=(self.textbox.get(), progress_bar,progress_modal))
+            thread.start()
+
+    def calculate_max_pixel(self, file_path, progress_bar, progress_modal):
+        # 重い処理を別スレッドで実行
+        progress_bar.start()
+        left_max_pixel, right_max_pixel = get_max_pixel(file_path)
+        # 処理が完了したらGUIの更新を行う
+        self.master.after(100, lambda: self.update_gui(left_max_pixel, right_max_pixel, progress_bar,progress_modal))
+    def update_gui(self, left_max_pixel, right_max_pixel, progress_bar,progress_modal):
+        # GUIの更新をメインスレッドで実行
+        progress_bar.stop()
+        progress_bar.destroy()
+
+        # ここで必要なGUIの更新を行う
+        self.master.enter_from_calib(left_max_pixel, right_max_pixel)
+        progress_modal.destroy()

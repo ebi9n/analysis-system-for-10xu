@@ -11,7 +11,7 @@ WINDOW_SIZE = "600x800"
 """
 import matplotlib.pyplot as plt
 plt.rcParams['ytick.major.width'] = 0.2#y軸主目盛り線の線幅
-plt.rcParams['font.size'] = 8 #フォントの大きさ
+plt.rcParams['font.size'] = 6 #フォントの大きさ
 plt.rcParams['axes.linewidth'] = 0.2# 軸の線幅edge linewidth
 FIGSIZE = (5,5)
 DPI = 100
