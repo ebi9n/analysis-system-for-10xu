@@ -14,7 +14,7 @@ import tkinter as tk
 from tkinter import ttk
 import setting
 from plot_dist_color_map_control import plotDistColorMap
-from calculation import get_max_pixel
+from calculation import Calculation
 FIGSIZE = setting.FIGSIZE
 DPI = setting.DPI
 
@@ -381,7 +381,7 @@ class ReadCalibFrame(tk.Frame):
     def calculate_max_pixel(self, file_path, progress_bar, progress_modal):
         # 重い処理を別スレッドで実行
         progress_bar.start()
-        left_max_pixel, right_max_pixel = get_max_pixel(file_path)
+        left_max_pixel, right_max_pixel = Calculation.get_max_pixel(file_path)
         # 処理が完了したらGUIの更新を行う
         self.master.after(100, lambda: self.update_gui(left_max_pixel, right_max_pixel, progress_bar,progress_modal))
     def update_gui(self, left_max_pixel, right_max_pixel, progress_bar,progress_modal):
