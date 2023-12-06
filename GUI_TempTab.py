@@ -15,6 +15,7 @@ from tkinter import ttk
 import setting
 from plot_dist_color_map_control import plotDistColorMap
 from calculation import Calculation
+from plot_temperature_result import PlotTempResult
 FIGSIZE = setting.FIGSIZE
 DPI = setting.DPI
 
@@ -57,6 +58,19 @@ class TempTab(tk.Frame):
                                               left_max_frame=self.left_max_pixel,
                                               right_max_frame=self.right_max_pixel,
                                               beam_diam_pixel=self.beam_diam_pixel)
+    def get_temp_result_param(self):
+        self.plot_option_frame.update_value()
+        if self.plot_option_frame.draw_min_frame is not None:
+            self.draw_min_frame = self.plot_option_frame.draw_min_frame
+        if self.plot_option_frame.draw_max_frame is not None:
+            self.draw_max_frame = self.plot_option_frame.draw_max_frame
+        if self.plot_option_frame.left_max_pixel is not None:
+            self.left_max_pixel = self.plot_option_frame.left_max_pixel
+        if self.plot_option_frame.right_max_pixel is not None:
+            self.right_max_pixel = self.plot_option_frame.right_max_pixel
+        if self.plot_option_frame.beam_diam_pixel is not None:
+            self.beam_diam_pixel = self.plot_option_frame.beam_diam_pixel
+        return self.dist_filepath,self.left_max_pixel,self.right_max_pixel,self.beam_diam_pixel
     def update_options(self):
         self.plot_option_frame.update_value()
         if self.plot_option_frame.draw_min_frame is not None:
@@ -179,13 +193,14 @@ class PlotOptionFrame(tk.LabelFrame):
         self.read_calib_frame.grid(row=1, column=0, padx=5,sticky=tk.EW)
         self.other_option_enter_frame = OtherOptionEnterFrame(self)
         self.other_option_enter_frame.grid(row=2,column=0,padx=5,sticky=tk.EW)
+
     def update_value(self):
         self.left_max_pixel = int(self.max_pixel_enter_frame.left_max_pixel_enter_frame.left_textbox.get())
         self.right_max_pixel = int(self.max_pixel_enter_frame.right_max_pixel_enter_frame.right_textbox.get())
         self.draw_min_frame = int(self.other_option_enter_frame.heat_start_enter_frame.left_textbox.get())
         self.draw_max_frame = int(self.other_option_enter_frame.heat_end_enter_frame.left_textbox.get())
         self.beam_diam_pixel = float(self.other_option_enter_frame.laser_diam_enter_frame.left_textbox.get())
-        print(type(self.beam_diam_pixel))
+
     def enter_from_calib(self,left_max_pixel, right_max_pixel):
         self.max_pixel_enter_frame.left_max_pixel_enter_frame.left_textbox.delete(0,tk.END)
         self.max_pixel_enter_frame.right_max_pixel_enter_frame.right_textbox.delete(0,tk.END)
@@ -197,7 +212,9 @@ class DrawSelectFrame(tk.Frame):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
         self.setup_form()
-
+        self.fig = None
+        self.all_temp_df = None
+        self.dlg_modeless = None
     def setup_form(self):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
@@ -209,9 +226,62 @@ class DrawSelectFrame(tk.Frame):
     def button_redraw(self):
         self.master.update_canvas()
     def button_calc_temp(self):
-        dlg_modeless = tk.Toplevel(self)
-        dlg_modeless.title("Modeless Dialog")   # ウィンドウタイトル
-        dlg_modeless.geometry("600x800")
+        
+        # 値を取得する
+        dist_path,left_max_pixel,right_max_pixel,laser_diam = self.master.get_temp_result_param()
+        plot_temp_result = PlotTempResult()
+        self.fig = plot_temp_result.replot(dist_filepath=dist_path,
+                                                 left_max_pixel=left_max_pixel,
+                                                 right_max_pixel=right_max_pixel,
+                                                 laser_diam=laser_diam)
+        self.all_temp_df = plot_temp_result.all_temp_df
+        self.temp_result_modeless = TempResultModeless(master=self,fig=self.fig,all_temp_df=self.all_temp_df,dist_path = dist_path)
+class TempResultModeless(tk.Toplevel):
+    def __init__(self,fig=None,all_temp_df = None,master=None,dist_path=None,*args, **kwargs):
+        super().__init__()
+        self.fig = fig
+        self.dist_path  = dist_path
+        self.all_temp_df = all_temp_df
+        self.title("Result View")   # ウィンドウタイトル
+        self.geometry("600x600")
+        self.setup_form()
+    def setup_form(self):
+        self.grid_rowconfigure(0,weight=1)
+        self.grid_columnconfigure(0,weight=1)
+
+        canvas = FigureCanvasTkAgg(master=self,figure=self.fig)
+        
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=0,column=0,padx=5,pady=5,sticky=tk.EW)
+
+        toolbar_frame = tk.Frame(master=self)
+        toolbar_frame.grid(row=1,column=0)
+        toolbar = NavigationToolbar2Tk(canvas, toolbar_frame)
+        self.save_select_frame = SaveSelectFrame(master=self)
+        self.save_select_frame.grid(row=2,column=0)
+class SaveSelectFrame(tk.Frame):
+    def __init__(self, *args,header_name="SaveSelectFrame", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.header_name = header_name
+        self.fig = self.master.fig
+        self.dist_path = self.master.dist_path
+        self.all_temp_df = self.master.all_temp_df
+        self.setup_form()
+
+    def setup_form(self):
+        save_fig_button = tk.Button(master=self, text='画像ファイルを保存',command=self.browse_save_fig)
+        save_csv_button = tk.Button(master=self, text='csvファイルを保存',command=self.browse_save_csv)
+        save_fig_button.grid(row=0, column=0)
+        save_csv_button.grid(row=0, column=1)
+    def browse_save_fig(self):
+        initialfile = os.path.splitext(os.path.basename(self.dist_path))[0]
+        save_fig_path = filedialog.asksaveasfilename(defaultextension='png',initialfile=initialfile)
+        self.fig.savefig(save_fig_path)
+    def browse_save_csv(self):
+        initialfile = os.path.splitext(os.path.basename(self.dist_path))[0]
+        save_csv_path = filedialog.asksaveasfilename(defaultextension='csv',initialfile=initialfile)
+        self.all_temp_df.to_csv(save_csv_path)
+
 class OtherOptionEnterFrame(tk.Frame):
     """
     中心位置を除くプロット設定を追記するフレーム

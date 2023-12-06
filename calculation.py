@@ -43,16 +43,17 @@ class Calculation:
                     left_max_pixel,
                     right_max_pixel,
                     laser_radius_pixel):
-        left_temp_df = temp_df.loc[:,left_max_pixel - laser_radius_pixel: left_max_pixel + laser_radius_pixel]
-        right_temp_df = temp_df.loc[:,right_max_pixel - laser_radius_pixel : right_max_pixel + laser_radius_pixel]
+        left_temp_df = temp_df.loc[:,left_max_pixel - laser_radius_pixel: left_max_pixel + laser_radius_pixel].replace(0,np.nan)
+        right_temp_df = temp_df.loc[:,right_max_pixel - laser_radius_pixel : right_max_pixel + laser_radius_pixel].replace(0,np.nan)
 
-        left_mean_temp_series = left_temp_df.mean(axis=1).replace(np.nan,300)
-        left_max_temp_series = left_temp_df.max(axis=1).replace(np.nan,300)
-        left_min_temp_series = left_temp_df.min(axis=1).replace(np.nan,300)
+        
+        left_mean_temp_series = left_temp_df.mean(axis=1)
+        left_max_temp_series = left_temp_df.max(axis=1)
+        left_min_temp_series = left_temp_df.min(axis=1)
 
-        right_mean_temp_series = right_temp_df.mean(axis=1).replace(np.nan,300)
-        right_max_temp_series  = right_temp_df.max(axis=1).replace(np.nan,300)
-        right_min_temp_series  = right_temp_df.min(axis=1).replace(np.nan,300)
+        right_mean_temp_series = right_temp_df.mean(axis=1)
+        right_max_temp_series  = right_temp_df.max(axis=1)
+        right_min_temp_series  = right_temp_df.min(axis=1)
 
         temp_meanmaxmin_arr = np.array([left_mean_temp_series,
                                         left_max_temp_series,

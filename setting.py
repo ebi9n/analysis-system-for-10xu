@@ -14,6 +14,7 @@ plt.rcParams['ytick.major.width'] = 0.2#y軸主目盛り線の線幅
 plt.rcParams['font.size'] = 5 #フォントの大きさ
 plt.rcParams['axes.linewidth'] = 0.2# 軸の線幅edge linewidth
 FIGSIZE = (5,5)
+TEMP_VS_FRAME_FIGSIZE = (5,4) # 500* 300になる
 DPI = 100
 FACECOLOR = "white"
 LASER_RANGE_COLOR = "white"

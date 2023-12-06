@@ -14,6 +14,7 @@ import GUI_XRDTab as XRDTab
 import GUI_TempTab as TempTab
 import setting
 
+
 WINDOW_TITLE = setting.WINDOW_TITLE
 WINDOW_SIZE = setting.WINDOW_SIZE
 class App(tk.Tk):
@@ -51,3 +52,4 @@ class App(tk.Tk):
 if __name__ == '__main__':
     app = App()
     app.mainloop()
+    
