@@ -25,7 +25,9 @@ class Calculation:
     def calc_temp_vs_frame(dist_path,
                         left_max_pixel=setting.LEFT_MAX_PIXEL,
                         right_max_pixel=setting.RIGHT_MAX_PIXEL,
-                        laser_diam=setting.INITIAL_LASER_DIAMETER):
+                        laser_diam=setting.INITIAL_LASER_DIAMETER,
+                        heat_start_frame=setting.INITIAL_HEAT_START_FRAME,
+                        heat_end_frame=setting.INITIAL_HEAT_END_FRAME):
         laser_radius_pixel = laser_diam / 2
         dist_df = pd.read_csv(dist_path)
         temp_df = plotDistColorMap.format_dist_df(dist_df)
@@ -34,7 +36,9 @@ class Calculation:
         all_temp_df = Calculation.get_calculated_temp_df(temp_df,
                                         left_max_pixel,
                                         right_max_pixel,
-                                        laser_radius_pixel)
+                                        laser_radius_pixel,
+                                        heat_start_frame,
+                                        heat_end_frame)
         return all_temp_df
         
 
@@ -42,7 +46,9 @@ class Calculation:
     def get_calculated_temp_df(temp_df,
                     left_max_pixel,
                     right_max_pixel,
-                    laser_radius_pixel):
+                    laser_radius_pixel,
+                    heat_start_frame,
+                    heat_end_frame):
         left_temp_df = temp_df.loc[:,left_max_pixel - laser_radius_pixel: left_max_pixel + laser_radius_pixel].replace(0,np.nan)
         right_temp_df = temp_df.loc[:,right_max_pixel - laser_radius_pixel : right_max_pixel + laser_radius_pixel].replace(0,np.nan)
 
@@ -65,6 +71,9 @@ class Calculation:
                                         columns= [['left','left','left','right','right','right'],
                                                     ['mean','max','min','mean','max','min']
                                                     ])
+        calculated_temp_df[0:heat_start_frame] = 300
+        calculated_temp_df[heat_end_frame:] = 300
+
         return calculated_temp_df
 
 if __name__ == '__main__':
@@ -73,7 +82,9 @@ if __name__ == '__main__':
     all_temp_df = Calculation.calc_temp_vs_frame(dist_path,
                                      left_max_pixel=131,
                                      right_max_pixel=381,
-                                     laser_diam=setting.INITIAL_LASER_DIAMETER)
+                                     laser_diam=setting.INITIAL_LASER_DIAMETER,
+                                     heat_start_frame=45,
+                                     heat_end_frame=85)
     fig = plt.figure(figsize=(9,4), dpi=150,facecolor='white')
     ax_right = fig.add_subplot(121)
     ax_left = fig.add_subplot(122)

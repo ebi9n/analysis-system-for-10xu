@@ -18,20 +18,24 @@ class PlotTempResult:
                dist_filepath=None,
                left_max_pixel=setting.LEFT_MAX_PIXEL,
                right_max_pixel=setting.RIGHT_MAX_PIXEL,
-               laser_diam=setting.INITIAL_LASER_DIAMETER):
+               laser_diam=setting.INITIAL_LASER_DIAMETER,
+               heat_start_frame=setting.INITIAL_HEAT_START_FRAME,
+               heat_end_frame=setting.INITIAL_HEAT_END_FRAME):
         
         self.all_temp_df = Calculation.calc_temp_vs_frame(dist_path=dist_filepath,
                                                           left_max_pixel=left_max_pixel,
                                                           right_max_pixel=right_max_pixel,
-                                                          laser_diam=laser_diam)
-        
+                                                          laser_diam=laser_diam,
+                                                          heat_start_frame=heat_start_frame,
+                                                          heat_end_frame=heat_end_frame)
+
         self.ax_left.plot(self.all_temp_df['left']['mean'],label='mean')
         self.ax_left.plot(self.all_temp_df['left']['max'],label='max')
         self.ax_left.plot(self.all_temp_df['left']['min'],label='min')
         self.ax_left.set_xlabel('Frame')
         self.ax_left.set_ylabel('Temperature (K)')
         self.ax_left.legend()
-
+        
         self.ax_right.plot(self.all_temp_df['right']['mean'],label='mean')
         self.ax_right.plot(self.all_temp_df['right']['max'],label='max')
         self.ax_right.plot(self.all_temp_df['right']['min'],label='min')

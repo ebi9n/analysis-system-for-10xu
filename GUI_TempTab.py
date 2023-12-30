@@ -70,7 +70,7 @@ class TempTab(tk.Frame):
             self.right_max_pixel = self.plot_option_frame.right_max_pixel
         if self.plot_option_frame.beam_diam_pixel is not None:
             self.beam_diam_pixel = self.plot_option_frame.beam_diam_pixel
-        return self.dist_filepath,self.left_max_pixel,self.right_max_pixel,self.beam_diam_pixel
+        return self.dist_filepath,self.draw_min_frame,self.draw_max_frame,self.left_max_pixel,self.right_max_pixel,self.beam_diam_pixel
     def update_options(self):
         self.plot_option_frame.update_value()
         if self.plot_option_frame.draw_min_frame is not None:
@@ -228,12 +228,14 @@ class DrawSelectFrame(tk.Frame):
     def button_calc_temp(self):
         
         # 値を取得する
-        dist_path,left_max_pixel,right_max_pixel,laser_diam = self.master.get_temp_result_param()
+        dist_path,heat_start_frame,heat_end_frame,left_max_pixel,right_max_pixel,laser_diam = self.master.get_temp_result_param()
         plot_temp_result = PlotTempResult()
         self.fig = plot_temp_result.replot(dist_filepath=dist_path,
                                                  left_max_pixel=left_max_pixel,
                                                  right_max_pixel=right_max_pixel,
-                                                 laser_diam=laser_diam)
+                                                 laser_diam=laser_diam,
+                                                 heat_start_frame=heat_start_frame,
+                                                 heat_end_frame=heat_end_frame)
         self.all_temp_df = plot_temp_result.all_temp_df
         self.temp_result_modeless = TempResultModeless(master=self,fig=self.fig,all_temp_df=self.all_temp_df,dist_path = dist_path)
 class TempResultModeless(tk.Toplevel):
