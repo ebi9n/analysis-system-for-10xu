@@ -1,4 +1,5 @@
 
+import numpy as np
 
 """
 ソフトウェアの見た目に関する設定
@@ -55,3 +56,20 @@ XRAY_WAVELENGTH = 0.414506
 """
 XRD_FPS = 10
 TEMP_FPS = 1/40.3 * 1000
+
+class EoS:
+        @staticmethod
+        def KCl_EoS_Dewaele2020(volume, temperature):
+            V0 = 54.5 # [A3]
+            K0 = 17.2 # [GPa]
+            K0_dash = 5.82 
+            aKT = 0.00224 # [GPa/K]
+            eta = volume/V0
+            first_item = 3 * K0 * eta **(-2/3) * (1 - eta **(1/3)) * np.exp(3/2 * (K0_dash - 1)*(1 - eta **(1/3)))
+            second_item = aKT * (temperature - 300)
+            pressure = first_item + second_item
+            return pressure
+        @staticmethod
+        def test_EoS(volume,temperature):
+            print('---test---')
+    

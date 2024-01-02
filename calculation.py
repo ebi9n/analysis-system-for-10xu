@@ -19,18 +19,6 @@ class Calculation:
         return EoS(volume,  temperature)
     
     @staticmethod
-    def KCl_EoS(volume, temperature):
-        V0 = 54.5 # [A3]
-        K0 = 17.2 # [GPa]
-        K0_dash = 5.82 
-        aKT = 0.00224 # [GPa/K]
-        eta = volume/V0
-        first_item = 3 * K0 * eta **(-2/3) * (1 - eta **(1/3)) * np.exp(3/2 * (K0_dash - 1)*(1 - eta **(1/3)))
-        second_item = aKT * (temperature - 300)
-        pressure = first_item + second_item
-        return pressure
-    
-    @staticmethod
     def calc_lattice_volume(formatted_XRD_df,
                             peak_seek_range_min= setting.PEAK_SEEK_RANGE_MIN,
                             peak_seek_range_max= setting.PEAK_SEEK_RANGE_MAX):
