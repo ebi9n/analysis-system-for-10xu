@@ -12,6 +12,7 @@ import tkinter as tk
 from tkinter import ttk
 import GUI_XRDTab as XRDTab
 import GUI_TempTab as TempTab
+import GUI_PhaseTab as PhaseTab
 import setting
 
 
@@ -31,8 +32,8 @@ class App(tk.Tk):
         self.tabs.pack(expand=True, fill='both')
         self.temp_tab = TempTab.TempTab(master=self.tabs)
         self.tabs.add(self.temp_tab, text='温度計算')
-        self.XRD_tab = XRDTab.XRDTab(master= self.tabs)
-        self.tabs.add(self.XRD_tab, text='XRD時系列')
+        self.phase_tab = PhaseTab.PhaseTab(master= self.tabs)
+        self.tabs.add(self.phase_tab, text='相図計算')
         self.protocol("WM_DELETE_WINDOW", self.delete_window)
     
     def delete_window(self):

@@ -37,6 +37,7 @@ RIGHT_RANGE_MAX = 400
 LEFT_MAX_PIXEL = 150
 RIGHT_MAX_PIXEL = 360
 """
+
 実験条件に関する設定
 ここの値が描画の初期値となる
 """
@@ -49,14 +50,18 @@ KClのピーク探査に関する初期設定
 """
 PEAK_SEEK_RANGE_MIN = 10.5
 PEAK_SEEK_RANGE_MAX = 10.5
-XRAY_WAVELENGTH = 0.414506
+XRAY_WAVELENGTH = 0.414506 # [Å]
+FREQ_SHOW_FRAME = 50
 
 """
-測定頻度を保管する処理の変数
+測定頻度を保管する処理の初期設定 ms / Frame
 """
-XRD_FPS = 10
-TEMP_FPS = 1/40.3 * 1000
+XRD_FREQ = 10
+TEMP_FREQ = 1/40.3 * 1000
 
+"""
+EoSの入力
+"""
 class EoS:
         @staticmethod
         def KCl_EoS_Dewaele2020(volume, temperature):

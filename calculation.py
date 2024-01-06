@@ -17,12 +17,36 @@ class Calculation:
     @staticmethod
     def calc_pressure(volume ,temperature, EoS):
         return EoS(volume,  temperature)
-    
     @staticmethod
-    def calc_lattice_volume(formatted_XRD_df,
+    def calc_pressure_each_column(volume_arr,all_complemented_temp_df,EoS):
+        all_pressure_list = []
+        for col in all_complemented_temp_df.columns:
+            temp_arr = all_complemented_temp_df[col]
+            pressure_arr = Calculation.calc_pressure(volume_arr,temp_arr,EoS)
+            all_pressure_list.append(pressure_arr)
+        
+        result_df = pd.DataFrame(np.array(all_pressure_list).T,columns=all_complemented_temp_df.columns)
+        existing_columns = result_df.columns
+        new_columns = pd.MultiIndex.from_tuples([('pressure', col[0], col[1]) for col in existing_columns])
+        result_df.columns = new_columns
+
+        return result_df
+    
+    def get_all_result_df(volume_arr,all_complemented_temp_df,EoS):
+        all_complemented_temp_df_copy = all_complemented_temp_df.copy()
+        pressure_result_df = Calculation.calc_pressure_each_column(volume_arr,all_complemented_temp_df_copy,EoS)
+        temp_existing_columns = all_complemented_temp_df_copy.columns
+        new_temp_columns = pd.MultiIndex.from_tuples([('temperature', col[0], col[1]) for col in temp_existing_columns])
+        all_complemented_temp_df_copy.columns = new_temp_columns
+        volume_df = pd.DataFrame(volume_arr)
+        all_result_df = pd.concat([pressure_result_df,all_complemented_temp_df_copy,volume_df],axis=1)
+        return all_result_df
+    @staticmethod
+    def calc_lattice_volume(XRD_filepath,
                             peak_seek_range_min= setting.PEAK_SEEK_RANGE_MIN,
                             peak_seek_range_max= setting.PEAK_SEEK_RANGE_MAX):
         # ピーク位置を探査
+        formatted_XRD_df =Calculation.format_XRD_df(XRD_filepath)
         peak_pos_arr = Calculation.calc_peak_twotheta(formatted_XRD_df,
                                                  peak_seek_range_min,
                                                  peak_seek_range_max)
@@ -30,9 +54,8 @@ class Calculation:
         # 物理法則から体積を計算
         a = Calculation.calc_cubic_a(peak_pos_arr)
         # 体積を返す
-        volume = a**3
-        print(volume)
-    
+        volume_arr = a**3
+        return volume_arr    
     @staticmethod
     def calc_peak_twotheta(formatted_XRD_df,
                            peak_seek_range_min,
@@ -50,7 +73,7 @@ class Calculation:
     def calc_cubic_a(peak_twotheta_deg,
                      h=1,k=1,l=0,
                      wl=setting.XRAY_WAVELENGTH):
-        peak_twotheta_rad = (peak_twotheta_deg/ 360) * np.pi
+        peak_twotheta_rad = (peak_twotheta_deg/ 360) *2 *  np.pi
         a = np.sqrt(h**2 + k**2 + l**2) * wl/(2 * np.sin(peak_twotheta_rad/2) )
         return a
     
@@ -94,6 +117,20 @@ class Calculation:
         return all_temp_df
 
     @staticmethod
+    def read_temp_df_from_csv(all_temp_path):
+        df = pd.read_csv(all_temp_path)
+        df = df.set_index(df.columns[0])
+        
+        df.columns = [['left','left','left','right','right','right'],
+              ['mean','max','min','mean','max','min']
+                                                    ]
+        
+        df = df[0:]
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+        return df
+
+    @staticmethod
     def get_calculated_temp_df(temp_df,
                     left_max_pixel,
                     right_max_pixel,
@@ -125,16 +162,18 @@ class Calculation:
         calculated_temp_df[heat_end_frame:] = 300
 
         return calculated_temp_df
+    
 
     @staticmethod
     def complement_temp_series(temp_series,
                                formatted_XRD_df,
-                               XRD_frame_per_ms = setting.XRD_FPS,
-                               temp_frame_per_ms =setting.TEMP_FPS):
+                               XRD_frame_per_ms = setting.XRD_FREQ,
+                               temp_frame_per_ms =setting.TEMP_FREQ):
         complementary_list = []
         temp_timeline = np.arange(0,len(temp_series)) * temp_frame_per_ms / 1000
         XRD_insty_arr =  np.array(formatted_XRD_df.values)
         calc_frame_arr = np.arange(len(XRD_insty_arr[0]))
+
         for itr in calc_frame_arr:
             now_second = itr / (1000/XRD_frame_per_ms)
             print(f'\r ... now analyzing at {now_second}', end='')
@@ -142,10 +181,71 @@ class Calculation:
             most_near_frame = np.argsort(diff_XRD_btwn_temp)[0]
             next_near_frame = np.argsort(diff_XRD_btwn_temp)[1]
             estimated_temp = (diff_XRD_btwn_temp[next_near_frame] * temp_series[most_near_frame] + diff_XRD_btwn_temp[most_near_frame] * temp_series[next_near_frame]) / temp_frame_per_ms * 1000
+
             complementary_list.append(estimated_temp)
         complementary_series = pd.Series(complementary_list)
         print(complementary_series)
+        
         return complementary_series
+
+    
+    @staticmethod
+    def get_all_complemented_temp_df(all_temp_df,
+                                     formatted_XRD_df,
+                                     XRD_frame_per_ms= setting.XRD_FREQ,
+                                     temp_frame_per_ms= setting.TEMP_FREQ):
+        left_mean_temp_series = all_temp_df['left']['mean']
+        left_max_temp_series = all_temp_df['left']['max']
+        left_min_temp_series = all_temp_df['left']['min']
+        right_mean_temp_series = all_temp_df['right']['mean']
+        right_max_temp_series = all_temp_df['right']['max']
+        right_min_temp_series = all_temp_df['right']['min']
+
+        mean_temp_series = (right_mean_temp_series + left_mean_temp_series)/2
+
+        complemented_left_mean_series = Calculation.complement_temp_series(left_mean_temp_series,
+                                                                           formatted_XRD_df,
+                                                                           XRD_frame_per_ms=XRD_frame_per_ms,
+                                                                           temp_frame_per_ms=temp_frame_per_ms)
+        complemented_left_max_series = Calculation.complement_temp_series(left_max_temp_series,
+                                                                           formatted_XRD_df,
+                                                                           XRD_frame_per_ms=XRD_frame_per_ms,
+                                                                           temp_frame_per_ms=temp_frame_per_ms)
+        complemented_left_min_series = Calculation.complement_temp_series(left_min_temp_series,
+                                                                           formatted_XRD_df,
+                                                                           XRD_frame_per_ms=XRD_frame_per_ms,
+                                                                           temp_frame_per_ms=temp_frame_per_ms)
+        complemented_right_mean_series = Calculation.complement_temp_series(right_mean_temp_series,
+                                                                           formatted_XRD_df,
+                                                                           XRD_frame_per_ms=XRD_frame_per_ms,
+                                                                           temp_frame_per_ms=temp_frame_per_ms)
+        complemented_right_max_series = Calculation.complement_temp_series(right_max_temp_series,
+                                                                           formatted_XRD_df,
+                                                                           XRD_frame_per_ms=XRD_frame_per_ms,
+                                                                           temp_frame_per_ms=temp_frame_per_ms)
+        complemented_right_min_series = Calculation.complement_temp_series(right_min_temp_series,
+                                                                           formatted_XRD_df,
+                                                                           XRD_frame_per_ms=XRD_frame_per_ms,
+                                                                           temp_frame_per_ms=temp_frame_per_ms)
+        complemented_mean_series = Calculation.complement_temp_series(mean_temp_series,
+                                                                        formatted_XRD_df,
+                                                                        XRD_frame_per_ms=XRD_frame_per_ms,
+                                                                        temp_frame_per_ms=temp_frame_per_ms)
+        complement_all_arr = np.array([complemented_left_mean_series,
+                                        complemented_left_max_series,
+                                        complemented_left_min_series,
+                                        complemented_right_mean_series,
+                                        complemented_right_max_series,
+                                        complemented_right_min_series,
+                                        complemented_mean_series])
+        
+        all_complemented_temp_df = pd.DataFrame(complement_all_arr.T,
+                                        columns= [['left','left','left','right','right','right','all'],
+                                                    ['mean','max','min','mean','max','min','all']
+                                                    ])
+        
+        return all_complemented_temp_df
+                
 if __name__ == '__main__':
     if False:
         print('-----calc start-----')
@@ -169,8 +269,14 @@ if __name__ == '__main__':
         formatted_XRD_df = Calculation.format_XRD_df(XRD_path)
         all_temp_df = Calculation.calc_temp_vs_frame(temp_path,
                                                      heat_start_frame=46,
-                                                     heat_end_frame=86)
-        left_mean_temp_series = all_temp_df['left']['mean']
-        comp_up_mean_temp_series = Calculation.complement_temp_series(left_mean_temp_series,
-                                                                      formatted_XRD_df)
-        
+                                                     heat_end_frame=86,
+                                                     right_max_pixel=131,
+                                                     left_max_pixel=381)
+        comp_all_temp_df = Calculation.get_all_complemented_temp_df(all_temp_df,
+                                                                    formatted_XRD_df,
+                                                                    XRD_frame_per_ms=10,
+                                                                    temp_frame_per_ms=24.8)
+        comp_all_temp_df.plot()
+        plt.xlim(100,220)
+        plt.ylim(0,4000)
+        plt.show()
