@@ -15,6 +15,7 @@ from tkinter import ttk
 import setting
 from plot_dist_color_map_control import plotDistColorMap
 from plot_seek_range_fig import PlotSeekRangeFig
+from plot_phase_diagram import PlotPhaseDiagram
 from calculation import Calculation
 from plot_temperature_result import PlotTempResult
 FIGSIZE = setting.FIGSIZE
@@ -47,7 +48,62 @@ class PhaseTab(tk.Frame):
         start_calc_EoS_button.grid(row=3,column=0,pady=30)
     def button_calc_phase(self):
         self.select_EoS_name = self.select_EoS_frame.combobox.get()
+        self.phase_diagram_modeless = PhaseDiagramModeless(master=self,
+                                                           volume_arr=self.volume_arr,
+                                                           all_complemented_temp_df= self.all_complemented_temp_df,
+                                                           EoS_name=self.select_EoS_name)
+    
         
+class PhaseDiagramModeless(tk.Toplevel):
+    def __init__(self,
+                 master=None,
+                 volume_arr=None,
+                 all_complemented_temp_df=None,
+                 EoS_name=None,
+                 *args, **kwargs):
+        super().__init__(master, **kwargs)
+        self.volume_arr = volume_arr
+        self.all_complemented_temp_df = all_complemented_temp_df
+        self.EoS_name = EoS_name
+        self.fig = None
+        self.EoS = getattr(setting.EoS,self.EoS_name)
+        self.setup_form()
+        
+    def setup_form(self):
+        self.grid_columnconfigure(0,weight=1)
+        self.result_df = Calculation.get_all_result_df(volume_arr=self.volume_arr,
+                                                       all_complemented_temp_df=self.all_complemented_temp_df,
+                                                       EoS=self.EoS)
+        self.plot_phase_diagram = PlotPhaseDiagram()
+        self.fig = self.plot_phase_diagram.get_phase_diagram(result_df=self.result_df)
+
+        canvas = FigureCanvasTkAgg(master=self,figure=self.fig)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=0,column=0,padx=5,pady=5,sticky=tk.EW)
+        self.save_select_frame = SaveSelectFrame(master=self)
+        self.save_select_frame.grid(row=1,column=0,padx=5,pady=5,sticky=tk.EW)
+    def save_result_csv(self):
+        save_path = filedialog.asksaveasfilename(defaultextension='csv')
+        self.result_df.to_csv(save_path)
+    def save_fig(self):
+        save_path = filedialog.asksaveasfilename(defaultextension='csv')
+        self.fig.savefig(save_path)
+
+class SaveSelectFrame(tk.Frame):
+    def __init__(self, *args,header_name="SaveSelectFrame", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.header_name = header_name
+        self.setup_form()
+
+    def setup_form(self):
+        save_fig_button = tk.Button(master=self, text='画像ファイルを保存',command=self.button_save_fig)
+        save_csv_button = tk.Button(master=self, text='csvファイルを保存',command=self.button_save_csv)
+        save_fig_button.grid(row=0, column=0)
+        save_csv_button.grid(row=0, column=1)
+    def button_save_fig(self):
+        self.master.save_fig()
+    def button_save_csv(self):
+        self.master.save_result_csv()
 
 class PeakSeekFrame(tk.LabelFrame):
     def __init__(self, *args,header_name="PeakSeekFrame", **kwargs):
@@ -283,7 +339,8 @@ class ComplementFreqFrame(tk.LabelFrame):
                                                                             XRD_frame_per_ms=self.XRD_FPS,
                                                                             temp_frame_per_ms=self.temp_FPS)
         self.master.all_complemented_temp_df = all_complemented_temp_df
-        
+        self.show_temp_progress_frame.temp_progress = True
+        self.show_temp_progress_frame.change_progress_color(self.show_temp_progress_frame.temp_progress)
     def get_parameters(self):
         if self.entry_freq_frame.XRD_textbox.get():
             self.XRD_FPS = float(self.entry_freq_frame.XRD_textbox.get())
@@ -353,18 +410,18 @@ class ShowTempProgressFrame(tk.Frame):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
         self.temp_progress = False
+        self.progress_label = None
         self.setup_form()
     def setup_form(self):
-        label = tk.Label(self,text='状況：')
-        progress_label = self.change_progress_color(self,self.temp_progress)
-        label.grid(row=0,column=0,padx=5)
-        progress_label.grid(row=0,column=1,padx=5)
-    @ staticmethod
-    def change_progress_color(master,progress):
+        self.label = tk.Label(self,text='状況：')
+        self.progress_label = tk.Label(self,text='未完了',foreground='#ff0000')
+        self.label.grid(row=0,column=0,padx=5)
+        self.progress_label.grid(row=0,column=1,padx=5)
+    def change_progress_color(self,progress):
         if progress:
-            return tk.Label(master,text='完了',foreground='#00ff22')
-        else:
-            return tk.Label(master,text='未完了',foreground='#ff0000')
+            self.progress_label.destroy()
+            self.progress_label = tk.Label(self,text='完了',foreground='#00ff00')
+            self.progress_label.grid(row=0,column=1,padx=5)
 
 class SelectEoSFrame(tk.LabelFrame):
     def __init__(self, *args,header_name="PeakSeekFrame", **kwargs):
@@ -378,7 +435,7 @@ class SelectEoSFrame(tk.LabelFrame):
         self.EoS_tuple = self.get_class_methods(setting.EoS)
         self.combobox = ttk.Combobox(self, state="readonly",values=self.EoS_tuple,width=25)
         self.progress_frame = ShowEoSProgressFrame(self)
-        
+        self.combobox.bind('<<ComboboxSelected>>',self.on_combobox_selected)
         self.combobox.grid(row=0,column=0)
         self.progress_frame.grid(row=1,column=0)
         
@@ -386,23 +443,27 @@ class SelectEoSFrame(tk.LabelFrame):
     def get_class_methods(cls):
         return tuple([func for func in dir(cls) if inspect.isfunction(getattr(cls, func))])
 
+    def on_combobox_selected(self,event):
+        self.progress_frame.EoS_progress = True
+        self.progress_frame.change_progress_color(self.progress_frame.EoS_progress)
+    
 class ShowEoSProgressFrame(tk.Frame):
     def __init__(self, *args, header_name="ShowProgress", **kwargs):
         super().__init__(*args, **kwargs)
         self.header_name = header_name
         self.EoS_progress = False
+        self.progress_label = None
         self.setup_form()
     def setup_form(self):
-        label = tk.Label(self,text='状況：')
-        progress_label = self.change_progress_color(self,self.EoS_progress)
-        label.grid(row=0,column=0,padx=5)
-        progress_label.grid(row=0,column=1,padx=5)
-    @ staticmethod
-    def change_progress_color(master,progress):
+        self.label = tk.Label(self,text='状況：')
+        self.progress_label = tk.Label(self,text='未完了',foreground='#ff0000')
+        self.label.grid(row=0,column=0,padx=5)
+        self.progress_label.grid(row=0,column=1,padx=5)
+    def change_progress_color(self,progress):
         if progress:
-            return tk.Label(master,text='完了',foreground='#00ff22')
-        else:
-            return tk.Label(master,text='未完了',foreground='#ff0000')
+            self.progress_label.destroy()
+            self.progress_label = tk.Label(self,text='完了',foreground='#00ff00')
+            self.progress_label.grid(row=0,column=1,padx=5)
 if __name__ == '__main__':
     app = tk.Tk()
     app.focus_force()

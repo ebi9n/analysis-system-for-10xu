@@ -6,6 +6,29 @@ import pandas as pd
 import setting
 from plot_dist_color_map_control import plotDistColorMap
 class Calculation:
+
+    @staticmethod
+    def get_sum_in_range(format_XRD_df,sum_range_min_twotheta, sum_range_max_twotheta):
+        all_frame_num = len(formatted_XRD_df.columns)
+        twotheta_arr = formatted_XRD_df.index
+        min_twotheta_idx = np.abs(twotheta_arr - sum_range_min_twotheta).argmin()
+        max_twotheta_idx = np.abs(twotheta_arr - sum_range_max_twotheta).argmin()
+        sum_list = []
+        for frame in range(all_frame_num):
+            insty_arr = formatted_XRD_df.iloc[:,frame].values
+            sum = np.sum(insty_arr[min_twotheta_idx:max_twotheta_idx])
+            sum_list.append(sum)
+        sum_arr = np.array(sum_list)
+        return sum_arr
+
+    @staticmethod
+    def normalize_formatted_df(formatted_XRD_df,
+                           quench_start_frame,
+                           quench_end_frame):
+        normalize_insty_series = formatted_XRD_df.iloc[:,quench_start_frame : quench_end_frame].sum(axis=1)
+        normalized_formatted_df = formatted_XRD_df.div(normalize_insty_series,axis=0)
+        return normalized_formatted_df
+    
     @staticmethod
     def format_XRD_df(XRD_path):
         XRD_df = pd.read_csv(XRD_path,
@@ -31,7 +54,7 @@ class Calculation:
         result_df.columns = new_columns
 
         return result_df
-    
+    @staticmethod
     def get_all_result_df(volume_arr,all_complemented_temp_df,EoS):
         all_complemented_temp_df_copy = all_complemented_temp_df.copy()
         pressure_result_df = Calculation.calc_pressure_each_column(volume_arr,all_complemented_temp_df_copy,EoS)
@@ -40,7 +63,8 @@ class Calculation:
         all_complemented_temp_df_copy.columns = new_temp_columns
         volume_df = pd.DataFrame(volume_arr)
         all_result_df = pd.concat([pressure_result_df,all_complemented_temp_df_copy,volume_df],axis=1)
-        return all_result_df
+        renamed_df = all_result_df.rename(columns={0 : 'volume'})
+        return renamed_df
     @staticmethod
     def calc_lattice_volume(XRD_filepath,
                             peak_seek_range_min= setting.PEAK_SEEK_RANGE_MIN,
