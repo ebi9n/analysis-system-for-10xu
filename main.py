@@ -1,16 +1,10 @@
 import tkinter as tk
-from tkinter import filedialog
-import os
-import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-from natsort import natsorted
 from tkinter import ttk
 from tkinter import messagebox
 
 import tkinter as tk
 from tkinter import ttk
-import GUI_XRDTab as XRDTab
 import GUI_TempTab as TempTab
 import GUI_PhaseTab as PhaseTab
 import setting

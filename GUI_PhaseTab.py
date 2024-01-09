@@ -1,23 +1,15 @@
 import tkinter as tk
 from tkinter import filedialog
-import os, subprocess
-import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-from natsort import natsorted
 from tkinter import ttk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import seaborn as sns
-import threading
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import inspect
 import tkinter as tk
 from tkinter import ttk
 import setting
-from plot_dist_color_map_control import plotDistColorMap
 from plot_seek_range_fig import PlotSeekRangeFig
 from plot_phase_diagram import PlotPhaseDiagram
 from calculation import Calculation
-from plot_temperature_result import PlotTempResult
 FIGSIZE = setting.FIGSIZE
 DPI = setting.DPI
 

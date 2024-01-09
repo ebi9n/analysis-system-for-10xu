@@ -1,5 +1,3 @@
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
