@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 from tkinter import filedialog
 import matplotlib.pyplot as plt
 from tkinter import ttk
@@ -33,7 +34,7 @@ class PhaseTab(tk.Frame):
         self.peak_seek_frame = PeakSeekFrame(master=self)
         complement_freq_frame = ComplementFreqFrame(master=self)
         self.select_EoS_frame = SelectEoSFrame(master=self)
-        start_calc_EoS_button = tk.Button(self,text='相図を描画',width=30,bg='#dddddd',command=self.button_calc_phase)
+        start_calc_EoS_button = tk.Button(self,text='圧力を計算',width=30,bg='#dddddd',command=self.button_calc_phase)
         self.peak_seek_frame.grid(row=0,column=0,pady=20,sticky="ew")
         complement_freq_frame.grid(row=1,column=0,pady=20,sticky="ew")
         self.select_EoS_frame.grid(row=2,column=0,pady=20,sticky="ew")
@@ -41,6 +42,7 @@ class PhaseTab(tk.Frame):
     def button_calc_phase(self):
         self.select_EoS_name = self.select_EoS_frame.combobox.get()
         self.phase_diagram_modeless = PhaseDiagramModeless(master=self,
+                                                           XRD_filepath=self.XRD_filepath,
                                                            volume_arr=self.volume_arr,
                                                            all_complemented_temp_df= self.all_complemented_temp_df,
                                                            EoS_name=self.select_EoS_name)
@@ -49,12 +51,14 @@ class PhaseTab(tk.Frame):
 class PhaseDiagramModeless(tk.Toplevel):
     def __init__(self,
                  master=None,
+                 XRD_filepath=None,
                  volume_arr=None,
                  all_complemented_temp_df=None,
                  EoS_name=None,
                  *args, **kwargs):
         super().__init__(master, **kwargs)
         self.volume_arr = volume_arr
+        self.XRD_filepath = XRD_filepath
         self.all_complemented_temp_df = all_complemented_temp_df
         self.EoS_name = EoS_name
         self.fig = None
@@ -75,10 +79,13 @@ class PhaseDiagramModeless(tk.Toplevel):
         self.save_select_frame = SaveSelectFrame(master=self)
         self.save_select_frame.grid(row=1,column=0,padx=5,pady=5,sticky=tk.EW)
     def save_result_csv(self):
-        save_path = filedialog.asksaveasfilename(defaultextension='csv')
+
+        initialfile = os.path.splitext(os.path.basename(self.XRD_filepath))[0]
+        save_path = filedialog.asksaveasfilename(defaultextension='csv',initialfile='PVT_result_'+initialfile,filetypes=[('Comma Separated Values(CSV)', '*.csv')])
         self.result_df.to_csv(save_path)
     def save_fig(self):
-        save_path = filedialog.asksaveasfilename(defaultextension='csv')
+        initialfile = os.path.splitext(os.path.basename(self.XRD_filepath))[0]
+        save_path = filedialog.asksaveasfilename(defaultextension='png',initialfile='PVT_result_'+initialfile,filetypes=[('Portable Network Graphics(PNG)', '*.png')])
         self.fig.savefig(save_path)
 
 class SaveSelectFrame(tk.Frame):

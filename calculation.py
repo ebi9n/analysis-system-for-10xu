@@ -87,7 +87,7 @@ class Calculation:
 
         nearest_range_min_idx = np.abs(twotheta_arr - peak_seek_range_min).argmin()
         nearest_range_max_idx = np.abs(twotheta_arr - peak_seek_range_max).argmin()
-        peak_pos_list = [(twotheta_arr[nearest_range_min_idx:nearest_range_max_idx])[np.argmax(insty_arr[frame][nearest_range_min_idx:nearest_range_max_idx])] for frame in range(len(insty_arr[0]))]
+        peak_pos_list = [(twotheta_arr[nearest_range_min_idx:nearest_range_max_idx])[np.argmax(insty_arr[:,frame][nearest_range_min_idx:nearest_range_max_idx])] for frame in range(len(insty_arr[0]))]
         peak_pos_arr = np.array(peak_pos_list)
         return peak_pos_arr
     
@@ -98,11 +98,6 @@ class Calculation:
         peak_twotheta_rad = (peak_twotheta_deg/ 360) *2 *  np.pi
         a = np.sqrt(h**2 + k**2 + l**2) * wl/(2 * np.sin(peak_twotheta_rad/2) )
         return a
-    
-    @staticmethod
-    def calc_cubic_volume(a):
-        volume = a**3
-        return volume
 
     @staticmethod
     def get_max_pixel(calib_path,
@@ -289,16 +284,20 @@ if __name__ == '__main__':
         XRD_path = 'model_data/XRD_test_input.csv'
         temp_path = 'model_data/rotated_(-4e-1)ERLAMBDAFeO06_  02(v3.0)_dist(20).csv'
         formatted_XRD_df = Calculation.format_XRD_df(XRD_path)
-        all_temp_df = Calculation.calc_temp_vs_frame(temp_path,
-                                                     heat_start_frame=46,
-                                                     heat_end_frame=86,
-                                                     right_max_pixel=131,
-                                                     left_max_pixel=381)
-        comp_all_temp_df = Calculation.get_all_complemented_temp_df(all_temp_df,
-                                                                    formatted_XRD_df,
-                                                                    XRD_frame_per_ms=10,
-                                                                    temp_frame_per_ms=24.8)
-        comp_all_temp_df.plot()
+        volume_arr = Calculation.calc_lattice_volume(XRD_path,
+                                                   peak_seek_range_min=9,
+                                                   peak_seek_range_max=10)
+        plt.plot(volume_arr)
+        #all_temp_df = Calculation.calc_temp_vs_frame(temp_path,
+        #                                             heat_start_frame=46,
+        #                                             heat_end_frame=86,
+        #                                             right_max_pixel=131,
+        #                                             left_max_pixel=381)
+        #comp_all_temp_df = Calculation.get_all_complemented_temp_df(all_temp_df,
+        #                                                            formatted_XRD_df,
+        #                                                            XRD_frame_per_ms=10,
+        #                                                            temp_frame_per_ms=24.8)
+        #comp_all_temp_df.plot()
         plt.xlim(100,220)
         plt.ylim(0,4000)
         plt.show()

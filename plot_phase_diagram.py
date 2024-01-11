@@ -27,7 +27,7 @@ class PlotPhaseDiagram:
         pressure_result_index =('pressure','all','all')
         temp_arr = result_df[temp_result_index]
         pressure_arr = result_df[pressure_result_index]
-        self.ax.scatter(temp_arr,pressure_arr)
-        self.ax.set_xlabel('Temperature (K)')
-        self.ax.set_ylabel('Preesure (GPa)')
+        self.ax.scatter(pressure_arr,temp_arr)
+        self.ax.set_ylabel('Temperature (K)')
+        self.ax.set_xlabel('Preesure (GPa)')
         return self.fig

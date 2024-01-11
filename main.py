@@ -27,7 +27,7 @@ class App(tk.Tk):
         self.temp_tab = TempTab.TempTab(master=self.tabs)
         self.tabs.add(self.temp_tab, text='温度計算')
         self.phase_tab = PhaseTab.PhaseTab(master= self.tabs)
-        self.tabs.add(self.phase_tab, text='相図計算')
+        self.tabs.add(self.phase_tab, text='圧力計算')
         self.protocol("WM_DELETE_WINDOW", self.delete_window)
     
     def delete_window(self):

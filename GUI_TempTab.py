@@ -281,7 +281,7 @@ class SaveSelectFrame(tk.Frame):
         self.fig.savefig(save_fig_path)
     def browse_save_csv(self):
         initialfile = os.path.splitext(os.path.basename(self.dist_path))[0]
-        save_csv_path = filedialog.asksaveasfilename(defaultextension='csv',initialfile=initialfile)
+        save_csv_path = filedialog.asksaveasfilename(defaultextension='csv',initialfile='processed_'+initialfile,filetypes=[('Comma Separated Values(CSV)', '*.csv')])
         self.all_temp_df.to_csv(save_csv_path)
 
 class OtherOptionEnterFrame(tk.Frame):
