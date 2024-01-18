@@ -1,2 +1,7 @@
 gui.ipynb
 model_data/
+ignore_analysis/
+.ipynb_checkpoints/
+PVT_result/
+temperature/
+XRD/

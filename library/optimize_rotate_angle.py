@@ -13,7 +13,7 @@ class OptimizeRotateAngle():
                 frame_min = 0,
                 frame_max = None):
         self.tiff_filename =  os.path.splitext(os.path.basename(tiff_path))[0]
-        self.images_multiarr = OptimizeRotateAngle.read_tiff_with_opencv(tiff_path)
+        self.images_multiarr = tifffile.imread(tiff_path)
         self.rotate_angle_arr = np.arange(rotate_angle_min,rotate_angle_max,rotate_angle_step)
         
         self.optimize_angle = None

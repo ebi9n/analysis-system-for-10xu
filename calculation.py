@@ -201,7 +201,6 @@ class Calculation:
 
             complementary_list.append(estimated_temp)
         complementary_series = pd.Series(complementary_list)
-        print(complementary_series)
         
         return complementary_series
 
