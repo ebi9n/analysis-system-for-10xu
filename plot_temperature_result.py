@@ -11,8 +11,8 @@ class PlotTempResult:
     def __init__(self):
         self.all_temp_df = None
         self.fig = plt.figure(figsize=FIGSIZE, dpi=DPI,facecolor=FACECOLOR)
-        self.ax_right = self.fig.add_subplot(121)
-        self.ax_left = self.fig.add_subplot(122)
+        self.ax_right = self.fig.add_subplot(122)
+        self.ax_left = self.fig.add_subplot(121)
         
     def replot(self,
                dist_filepath=None,
